@@ -219,19 +219,8 @@ public class TreeDNDForm extends AbstractForm implements IPageForm {
           }
 
           @Override
-          protected int getConfiguredDragType() {
-            return TYPE_TEXT_TRANSFER;
-          }
-
-          @Override
           protected int getConfiguredDropType() {
             return TYPE_TEXT_TRANSFER;
-          }
-
-          @Override
-          protected TransferObject execDrag(ITreeNode node) {
-            getDNDStatusField().addLine("Drag was started on " + node.getCell().getText());
-            return new TextTransferObject(node.getCell().getText());
           }
 
           @Override
@@ -337,19 +326,8 @@ public class TreeDNDForm extends AbstractForm implements IPageForm {
           }
 
           @Override
-          protected int getConfiguredDragType() {
-            return TYPE_TEXT_TRANSFER;
-          }
-
-          @Override
           protected int getConfiguredDropType() {
             return TYPE_TEXT_TRANSFER;
-          }
-
-          @Override
-          protected TransferObject execDrag(ITreeNode node) {
-            getDNDStatusField().addLine("Drag was started on " + node.getCell().getText());
-            return new TextTransferObject(node.getCell().getText());
           }
 
           @Override
