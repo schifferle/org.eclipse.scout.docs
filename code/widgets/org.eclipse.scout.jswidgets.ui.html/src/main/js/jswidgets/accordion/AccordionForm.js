@@ -121,6 +121,7 @@ jswidgets.AccordionForm.prototype._insertGroupWithTiles = function() {
     title: title,
     body: {
       objectType: 'TileGrid',
+      cssClass: 'simple-tile-grid',
       gridColumnCount: 6,
       layoutConfig: {
         columnWidth: 100,

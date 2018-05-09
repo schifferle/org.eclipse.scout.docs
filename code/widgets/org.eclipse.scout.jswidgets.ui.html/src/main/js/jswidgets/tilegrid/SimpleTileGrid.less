@@ -1,0 +1,9 @@
+.simple-tile-grid {
+  &.selectable {
+    padding: 10px;
+  }
+
+  & > .tile {
+    transition: @simple-tile-selection-transition, @tile-grid-loading-transition;
+  }
+}

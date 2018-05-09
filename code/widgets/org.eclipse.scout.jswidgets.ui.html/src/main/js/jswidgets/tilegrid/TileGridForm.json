@@ -68,6 +68,7 @@
             "tileGrid": {
               "id": "TileGrid",
               "objectType": "TileGrid",
+              "cssClass": "simple-tile-grid",
               "scrollable": true,
               "tiles": [
                 {
@@ -120,6 +121,9 @@
         "objectType": "TabBox",
         "cssClass": "jswidgets-configuration",
         "selectedTab": "PropertiesTab",
+        "gridDataHints": {
+          "weightY": 0
+        },
         "tabItems": [
           {
             "id": "PropertiesTab",

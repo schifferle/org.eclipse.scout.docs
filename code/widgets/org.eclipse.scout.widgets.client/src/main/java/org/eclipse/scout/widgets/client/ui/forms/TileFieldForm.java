@@ -162,6 +162,11 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
         public class TileGrid extends AbstractTileGrid<ISimpleTile> {
 
           @Override
+          protected String getConfiguredCssClass() {
+            return "simple-tile-grid";
+          }
+
+          @Override
           protected void initConfig() {
             super.initConfig();
             TileGridMenuType.updateMenuVisibilitiesForTiles(this);

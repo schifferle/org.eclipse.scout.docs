@@ -115,6 +115,9 @@
         "objectType": "TabBox",
         "cssClass": "jswidgets-configuration",
         "selectedTab": "PropertiesTab",
+        "gridDataHints": {
+          "weightY": 0
+        },
         "tabItems": [
           {
             "id": "PropertiesTab",

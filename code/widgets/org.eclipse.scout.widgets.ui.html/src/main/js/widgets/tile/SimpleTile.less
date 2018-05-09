@@ -1,10 +1,18 @@
+@simple-tile-selection-transition: transform 200ms ease-out, box-shadow 200ms ease-out;
+
 .simple-tile {
   color: white;
   background-color: @palette-blue-3;
   padding: 5px;
+  transition: @simple-tile-selection-transition;
 
   &.selectable:hover {
     background-color: darken(@palette-blue-3, 10%);
+  }
+
+  &.selected {
+    #scout.transform(translateY(-10px));
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
   }
 
   &.color-alternative {

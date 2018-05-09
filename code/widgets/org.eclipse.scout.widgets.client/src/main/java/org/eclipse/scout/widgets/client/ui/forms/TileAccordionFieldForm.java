@@ -437,6 +437,11 @@ public class TileAccordionFieldForm extends AbstractForm implements IAdvancedExa
               }
 
               @Override
+              protected String getConfiguredCssClass() {
+                return "simple-tile-grid";
+              }
+
+              @Override
               protected TileGridLayoutConfig getConfiguredLayoutConfig() {
                 return super.getConfiguredLayoutConfig()
                     .withColumnWidth(100)

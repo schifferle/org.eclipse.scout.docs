@@ -223,6 +223,7 @@ jswidgets.TileAccordionForm.prototype._insertGroupWithTiles = function() {
     title: 'Group ' + this.insertedGroupCount++,
     body: {
       objectType: 'TileGrid',
+      cssClass: 'simple-tile-grid',
       gridColumnCount: 6,
       layoutConfig: {
         columnWidth: 100,

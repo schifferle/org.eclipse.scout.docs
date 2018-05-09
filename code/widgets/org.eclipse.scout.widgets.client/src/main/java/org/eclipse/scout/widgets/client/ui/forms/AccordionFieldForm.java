@@ -314,6 +314,11 @@ public class AccordionFieldForm extends AbstractForm implements IAdvancedExample
     public class TileGrid extends AbstractTileGrid<AbstractSimpleTile> {
 
       @Override
+      protected String getConfiguredCssClass() {
+        return "simple-tile-grid";
+      }
+
+      @Override
       protected int getConfiguredGridColumnCount() {
         return 6;
       }
