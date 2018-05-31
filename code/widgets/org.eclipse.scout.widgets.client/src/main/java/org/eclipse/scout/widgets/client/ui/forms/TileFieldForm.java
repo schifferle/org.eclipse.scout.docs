@@ -50,8 +50,9 @@ import org.eclipse.scout.widgets.client.ui.forms.TileFieldForm.MainBox.Propertie
 import org.eclipse.scout.widgets.client.ui.forms.TileFieldForm.MainBox.PropertiesBox.ScrollableField;
 import org.eclipse.scout.widgets.client.ui.forms.TileFieldForm.MainBox.PropertiesBox.SelectableField;
 import org.eclipse.scout.widgets.client.ui.template.formfield.AbstractFormFieldPropertiesBox;
-import org.eclipse.scout.widgets.client.ui.tile.AbstractSimpleTile;
-import org.eclipse.scout.widgets.client.ui.tile.ISimpleTile;
+import org.eclipse.scout.widgets.client.ui.tile.AbstractCustomTile;
+import org.eclipse.scout.widgets.client.ui.tile.ICustomTile;
+import org.eclipse.scout.widgets.client.ui.tile.CustomTileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +61,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
   private static final Logger LOG = LoggerFactory.getLogger(TileFieldForm.class);
 
   private int m_tilesAddedCount = 0;
-  private SimpleTileFilter m_tileFilter;
+  private CustomTileFilter m_tileFilter;
 
   @Override
   public void startPageForm() {
@@ -159,7 +160,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
         }
 
         @ClassId("0cd4de91-68d0-4a1d-b123-5006b566481d")
-        public class TileGrid extends AbstractTileGrid<ISimpleTile> {
+        public class TileGrid extends AbstractTileGrid<ICustomTile> {
 
           @Override
           protected void initConfig() {
@@ -174,7 +175,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
           }
 
           @Override
-          protected void execTilesSelected(List<ISimpleTile> tiles) {
+          protected void execTilesSelected(List<ICustomTile> tiles) {
             super.execTilesSelected(tiles);
             TileGridMenuType.updateMenuVisibilitiesForTiles(this);
             updateStatus();
@@ -221,7 +222,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
 
             @Override
             protected void execAction() {
-              List<ISimpleTile> tiles = new ArrayList<>();
+              List<ICustomTile> tiles = new ArrayList<>();
               for (int i = 0; i < 50; i++) {
                 SimpleTile tile = new SimpleTile();
                 tile.setLabel("New tile " + m_tilesAddedCount++);
@@ -250,8 +251,8 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
               if (tileGrid.getTiles().size() == 0) {
                 return;
               }
-              ISimpleTile selectedTile = tileGrid.getSelectedTile();
-              ISimpleTile tileToSelect = null;
+              ICustomTile selectedTile = tileGrid.getSelectedTile();
+              ICustomTile tileToSelect = null;
               if (selectedTile != null) {
                 int selectedTileIndex = tileGrid.getTiles().indexOf(selectedTile);
                 if (selectedTileIndex < tileGrid.getTiles().size() - 1) {
@@ -474,35 +475,35 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
 
           }
 
-          public class SimpleTile1 extends AbstractSimpleTile {
+          public class SimpleTile1 extends AbstractCustomTile {
             @Override
             protected String getConfiguredLabel() {
               return "Tile 1";
             }
           }
 
-          public class SimpleTile2 extends AbstractSimpleTile {
+          public class SimpleTile2 extends AbstractCustomTile {
             @Override
             protected String getConfiguredLabel() {
               return "Tile 2";
             }
           }
 
-          public class SimpleTile3 extends AbstractSimpleTile {
+          public class SimpleTile3 extends AbstractCustomTile {
             @Override
             protected String getConfiguredLabel() {
               return "Tile 3";
             }
           }
 
-          public class SimpleTile4 extends AbstractSimpleTile {
+          public class SimpleTile4 extends AbstractCustomTile {
             @Override
             protected String getConfiguredLabel() {
               return "Tile 4";
             }
           }
 
-          public class SimpleTile5 extends AbstractSimpleTile {
+          public class SimpleTile5 extends AbstractCustomTile {
             @Override
             protected String getConfiguredLabel() {
               return "Tile 5";
@@ -570,7 +571,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
     protected void filterTilesByText(String text) {
       if (!StringUtility.isNullOrEmpty(text)) {
         if (m_tileFilter == null) {
-          m_tileFilter = new SimpleTileFilter();
+          m_tileFilter = new CustomTileFilter();
           getTileField().getTileGrid().addFilter(m_tileFilter);
         }
         m_tileFilter.setText(text);
@@ -588,9 +589,9 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
     }
 
     protected void sortTiles(boolean asc) {
-      getTileField().getTileGrid().setComparator(new Comparator<ISimpleTile>() {
+      getTileField().getTileGrid().setComparator(new Comparator<ICustomTile>() {
         @Override
-        public int compare(ISimpleTile tile1, ISimpleTile tile2) {
+        public int compare(ICustomTile tile1, ICustomTile tile2) {
           int result = StringUtility.ALPHANUMERIC_COMPARATOR.compare(tile1.getLabel(), tile2.getLabel());
           if (!asc) {
             result = -result;
@@ -854,7 +855,7 @@ public class TileFieldForm extends AbstractForm implements IAdvancedExampleForm 
     }
   }
 
-  public static class SimpleTile extends AbstractSimpleTile {
+  public static class SimpleTile extends AbstractCustomTile {
   }
 
 }

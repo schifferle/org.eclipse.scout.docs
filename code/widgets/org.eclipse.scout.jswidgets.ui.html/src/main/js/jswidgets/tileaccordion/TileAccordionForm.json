@@ -79,7 +79,7 @@
             "objectType": "AccordionField",
             "labelVisible": false,
             "gridDataHints": {
-              "h": 4,
+              "h": 8,
               "w": 2
             },
             "accordion": {

@@ -1,7 +1,7 @@
 .simple-tile {
   color: white;
   background-color: @palette-blue-3;
-  padding: 7px;
+  padding: @tile-padding + 1px;
 
   .tile-grid > & {
     /* TileGrid.less already defines a transition for tiles -> override by defining a more specific rule */

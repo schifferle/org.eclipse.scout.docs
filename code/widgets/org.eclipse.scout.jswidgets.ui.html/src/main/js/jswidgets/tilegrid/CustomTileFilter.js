@@ -1,15 +1,15 @@
-jswidgets.SimpleTileFilter = function(model) {
+jswidgets.CustomTileFilter = function(model) {
   model = model || {};
   this.text = null;
   this.setText(model.text);
 };
 
-jswidgets.SimpleTileFilter.prototype.setText = function(text) {
+jswidgets.CustomTileFilter.prototype.setText = function(text) {
   this.text = text || '';
   this.text = this.text.toLowerCase();
 };
 
-jswidgets.SimpleTileFilter.prototype.accept = function(tile) {
+jswidgets.CustomTileFilter.prototype.accept = function(tile) {
   var label = tile.label || '';
   var filterText = label.trim().toLowerCase();
   return filterText.indexOf(this.text) > -1;
