@@ -64,6 +64,9 @@
   __include("jswidgets/menubar/MenuBarForm.js");
   __include("jswidgets/menubar/MenuItemLookupCall.js");
   __include("jswidgets/numberfield/NumberFieldForm.js");
+  __include("jswidgets/popup/PopupForm.js");
+  __include("jswidgets/popup/PopupHorizontalAlignLookupCall.js");
+  __include("jswidgets/popup/PopupVerticalAlignLookupCall.js");
   __include("jswidgets/smartfield/SmartFieldForm.js");
   __include("jswidgets/smartfield/SmartFieldPropertiesBox.js");
   __include("jswidgets/smartfield/SmartFieldDisplayStyleLookupCall.js");

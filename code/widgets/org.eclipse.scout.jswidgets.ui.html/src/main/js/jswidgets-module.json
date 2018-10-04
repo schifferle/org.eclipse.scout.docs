@@ -30,6 +30,7 @@
     "jswidgets/smartfield/SmartFieldForm.json",
     "jswidgets/smartfield/SmartFieldPropertiesBox.json",
     "jswidgets/listbox/ListBoxForm.json",
+    "jswidgets/popup/PopupForm.json",
     "jswidgets/smartfield/multiline/MultilineSmartFieldForm.json",
     "jswidgets/smartfield/table/TableSmartFieldForm.json",
     "jswidgets/smartfield/tree/TreeSmartFieldForm.json",
