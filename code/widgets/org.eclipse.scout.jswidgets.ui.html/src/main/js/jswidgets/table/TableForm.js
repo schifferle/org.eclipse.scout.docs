@@ -32,6 +32,7 @@ jswidgets.TableForm.prototype._init = function(model) {
   this.widget('MoveDownMenu').on('action', this._onMoveDownMenuAction.bind(this));
   this.widget('MoveToBottomMenu').on('action', this._onMoveToBottomMenuAction.bind(this));
   this.widget('DeleteRowMenu').on('action', this._onDeleteRowMenuAction.bind(this));
+  this.table.on('appLinkAction', this._onAppLinkAction.bind(this));
 
   this.widget('PropertiesBox').setTable(this.table);
   this.widget('FormFieldPropertiesBox').setField(this.widget('TableField'));
@@ -60,6 +61,52 @@ jswidgets.TableForm.prototype._onTargetPropertyChange = function(event) {
     var columnPropertiesBox = this.widget('Column.PropertiesBox');
     columnPropertiesBox.setColumn(newColumn);
     columnPropertiesBox.setEnabled(!!newColumn);
+
+    var columnPropertyTab = this.widget('ColumnProperties');
+    var newPropertiesBoxField = this._createPropertiesBox(newColumn, columnPropertyTab);
+    if (newPropertiesBoxField !== null) {
+      columnPropertyTab.insertFieldBefore(newPropertiesBoxField, columnPropertiesBox);
+      newPropertiesBoxField.setColumn(newColumn);
+    }
+    this._removePropertiesBoxes(newColumn.objectType, columnPropertyTab);
+
+    this.validateLayoutTree();
+  }
+};
+
+jswidgets.TableForm.prototype._createPropertiesBox = function(newColumn, parent) {
+  switch (newColumn.objectType) {
+    case 'DateColumn':
+      return scout.create('jswidgets.DateColumnPropertiesBox', {
+        id: 'DateColumnPropertyField',
+        label: 'Date Column Properties',
+        parent: parent
+      });
+    case 'NumberColumn':
+      return scout.create('jswidgets.NumberColumnPropertiesBox', {
+        id: 'NumberColumnPropertyField',
+        label: 'Number Column Properties',
+        parent: parent
+      });
+    default:
+      return null;
+  }
+};
+
+jswidgets.TableForm.prototype._removePropertiesBoxes = function(newColumnTypeName, tabBox) {
+  if (newColumnTypeName !== 'DateColumn') {
+    this._removePropertyBox('DateColumnPropertyField', tabBox);
+  }
+  if (newColumnTypeName !== 'NumberColumn') {
+    this._removePropertyBox('NumberColumnPropertyField', tabBox);
+  }
+};
+
+jswidgets.TableForm.prototype._removePropertyBox = function(propertyBoxId, tabBox) {
+  var boxToRemove = this.widget(propertyBoxId);
+  if (boxToRemove) {
+    boxToRemove.setColumn(null);
+    tabBox.deleteField(boxToRemove);
   }
 };
 
@@ -77,6 +124,7 @@ jswidgets.TableForm.prototype._createRow = function() {
   var numberValue = this.rowNo;
   var smartValue = locales[this.rowNo % locales.length];
   var booleanValue = this.rowNo % 2 === 0;
+  var htmlValue = '<span class="app-link" data-ref="' + this.rowNo + '">App Link</span>';
 
   if (this.rowNo % jswidgets.TableForm.GROUP_SIZE === 0) {
     this.groupNo++;
@@ -85,7 +133,7 @@ jswidgets.TableForm.prototype._createRow = function() {
 
   return {
     iconId: rowIcon,
-    cells: [stringValue, dateValue, numberValue, smartValue, booleanValue, iconValue]
+    cells: [stringValue, dateValue, numberValue, smartValue, booleanValue, iconValue, htmlValue]
   };
 };
 
@@ -111,4 +159,10 @@ jswidgets.TableForm.prototype._onMoveToBottomMenuAction = function() {
 
 jswidgets.TableForm.prototype._onDeleteRowMenuAction = function() {
   this.table.deleteRows(this.table.selectedRows);
+};
+
+jswidgets.TableForm.prototype._onAppLinkAction = function(event) {
+  scout.MessageBoxes.createOk(this)
+    .withBody("Link with ref '" + event.ref + "' has been clicked.")
+    .buildAndOpen();
 };

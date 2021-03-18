@@ -20,13 +20,12 @@ The interface is annotated by `@Bean` allowing the Scout platform to load and re
 [source,java]
 .Example: REST resource
 ----
-include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/rest/ExampleRestResource.java[tags=class]
+include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/rest/ExampleResource.java[tags=class]
 ----
 
 ==== REST Resource Registration ====
 
 All available REST resources are automatically registered by the `RestApplication` class while the Scout platform startup.
-Override this class in order to setup any custom JAX-RS configurations or register any custom JAX-RS classes.
 
 Add the following snippet to your `web.xml` file to expose your REST API using the `/api` context path:
 
@@ -50,6 +49,27 @@ Add the following snippet to your `web.xml` file to expose your REST API using t
 </servlet-mapping>
 ----
 
+==== Extend REST Application
+The JAX-RS application API (`javax.ws.rs.core.Application`) allows a REST application implementation to specify a set of classes, a set of singleton instances and a map of custom properties to be registered.
+The Scout implementation of the REST application class `org.eclipse.scout.rt.rest.RestApplication` allows to contribute classes, singletons and properties without needing to extend the `RestApplication` class.
+
+Three different contributor interfaces are available for contributions:
+
+* `IRestApplicationClassesContributor` to contribute any classes
+* `IRestApplicationSingletonsContributor` to contribute any object instances (singletons)
+* `IRestApplicationPropertiesContributor` to contribute key/value properties
+
+[source,java]
+.Example class contributor
+----
+public static class ExampleClassContributor implements IRestApplicationClassesContributor {
+  @Override
+  public Set<Class<?>> contribute() {
+    return Collections.singleton(MyCustomExample.class);
+  }
+}
+----
+
 ==== Data Objects ====
 Scout data objects may be used as request and response objects for REST APIs.
 See <<cha-data-objects>> for details and examples.
@@ -61,10 +81,6 @@ The marshaller between Java data objects and JSON is abstracted in the JAX-RS sp
 Using the `@Produces(MediaType.APPLICATION_JSON)` annotation, each REST service method specifies the produces data format.
 
 The Scout REST integration uses the popular Jackson library as default marshaller.
-Add a Maven dependency to `jersey-media-json-jackson` in your application `pom.xml` to use Jackson as JAX-RS marshaller with the Jersey JAX-RS implementation.
-
-Additionally add a dependency to the Scout module `org.eclipse.scout.rt.rest.jackson`.
-This module adds a set of Jackson additions in order to use Jackson with Scout data objects.
 
 ==== RunContext ====
 Like a usual service call using the Scout service tunnel a REST request must ensure that processing of the request takes place within a `RunContext`.
@@ -91,19 +107,52 @@ All following filters and servlets and thus also the REST resources run automati
 Beside the `subject` the `ServerRunContextFilter` sets up the Correlation ID, as well as the locale.
 Both values are read from the incoming request header, the caller must ensure that the headers `Accept-Language` and `X-Scout-Correlation-Id` are set correctly.
 
+=== Dependency Management ===
+
+Scout REST services based on JAX-RS using the Jersey library and the Jackson JSON marshaller need a maven dependency to `jersey-media-json-jackson` in your application pom.xml.
+This enables to use Jackson as JAX-RS marshaller with the Jersey JAX-RS implementation.
+Additionally a dependency to the Scout module `org.eclipse.scout.rt.rest.jackson` is necessary.
+This module adds a set of Jackson additions in order to use the Jackson library together with Scout data objects.
+
+[source, xml]
+.Depencency section of pom.xml to use Scout REST services with Jackson & Jersey
+----
+<!-- JAX-RS Jersey -->
+<dependency>
+    <groupId>org.glassfish.jersey.containers</groupId>
+    <artifactId>jersey-container-servlet-core</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jersey.media</groupId>
+    <artifactId>jersey-media-json-jackson</artifactId>
+</dependency>
+
+<!-- Jackson/Scout integration -->
+<dependency>
+    <groupId>org.eclipse.scout.rt</groupId>
+    <artifactId>org.eclipse.scout.rt.rest.jackson</artifactId>
+</dependency>
+----
+
+
 === REST Client ===
 
 The Scout module `org.eclipse.scout.rt.rest` offers a set of helper classes in order to call REST services.
 
-Each REST service endpoint is represented by a specific REST resource client helper class. The (usually application scoped bean) class is used to specify the resource URL and additional properties used to build up the connection (authentication, additional headers,...).
+Each REST service endpoint is represented by a specific REST resource client helper class. The (usually application scoped bean) class is used to specify the
+resource URL and additional properties used to build up the connection (authentication, additional headers,...). Further it provides a call-back method for transforming
+unsuccessful responses into appropriate exception.
 
-At least the REST resource base path must be specified:
+At least the REST resource's base URI must be specified:
 
 [source,java]
 .Example: REST resource client helper
 ----
 include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/rest/ExampleRestClientHelper.java[tags=class]
 ----
+<1> Declare base uri.
+<2> Custom exception transformer that is used as default strategy for all invocations prepared by this helper. (This is just for demonstration. Better extend
+    `org.eclipse.scout.rt.rest.client.proxy.AbstractEntityRestClientExceptionTransformer`).
 
 Based on the helper class, an example REST resource client may be implemented:
 
@@ -112,3 +161,8 @@ Based on the helper class, an example REST resource client may be implemented:
 ----
 include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/rest/ExampleResourceClient.java[tags=class]
 ----
+<1> HTTP GET example: Directly read response into an object. Exceptions are transformed transparently and the underlying resources are released (e.g. HTTP client).
+<2> HTTP POST example: Again, directly read the response into an object.
+<3> HTTP DELETE example: This delete operation does not send a response if it was successful. Hence close the returned `Response` explicitly to release underlying resources
+    (see next line). Note: Unsuccessful responses are already handled by the REST client proxy.
+<4> Use custom exception transformer.

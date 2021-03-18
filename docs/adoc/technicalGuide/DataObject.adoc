@@ -78,6 +78,18 @@ If no `@TypeName` annotation is declared for a data object class, the simple cla
 
 NOTE: Declaring a logical type name using the `@TypeName`annotation is highly recommended to avoid a 1:1 dependency between the serialized JSON String and the fully classified class name. A stable type name is required in order to be able to change the data object structure without breaking the API.
 
+==== Type Version  ====
+
+A data object may be  annotated with a type version using the `@TypeVersion` annotation.
+The type version represents the version of the structure of the data object and not the version of the data within the data object.
+The type version value should be incremented, each time, the data object class is modified (add/remove/rename attributes).
+If a version is required for versioning the values of a data object, consider add a `version` attribute, incrementing its value, every time a value of the data object is modified.
+
+The annotation value is added to the serialized JSON object as top-level `_typeVersion` property.
+The serialized `_typeVersion` value is not deserialized into an attribute, since the deserializer creates a concrete data object class at runtime, having the `@TypeVersion` annotation providing the type version value.
+
+NOTE: Declaring a logical type version using the `@TypeVersion`annotation is highly recommended if a data object is persisted as JSON document to a file or database.
+
 ==== Data Object Naming Convention ====
 
 Scout objects use the following naming conventions:
@@ -115,6 +127,18 @@ include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/sco
 The `IValueFormatConstants` interface declares a set of default format pattern constants.
 
 Attributes with type `java.util.Date` accept the format pattern specified by `SimpleDateFormat` class (see https://docs.oracle.com/javase/8/docs/api/java/text/SimpleDateFormat.html)
+
+=== Ignoring an Attribute ===
+
+The `@JsonIgnore` annotation included in the Jackson library is currently not supported for data objects.
+To ignore an attribute when serializing a data object, the attribute must be removed from the data object by either not setting a value for the desired attribute
+or by explicitly removing the attribute before a data object is serialized:
+
+[source,java]
+.Example: Remove an attribute from a data object
+----
+include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/dataobject/DataObjectExamples.java[tags=removeAttribute]
+----
 
 === Handling of DoEntity Attributes ===
 
@@ -191,12 +215,23 @@ Therefore, the deserializer knows which concrete class to instantiate while dese
 This mechanism is used for simple value properties and list value properties.
 To each object which is part of a list value property the `_type` property is added to support polymorphism within single elements of a list.
 
-
 [source,json]
 .Example: ExampleDoEntityListDo as JSON
 ----
 include::{codedir}/org.eclipse.scout.docs.snippets/src/main/resources/org/eclipse/scout/docs/snippets/dataobject/ExampleDoEntityListDo.json[]
 ----
+
+=== Rename an attribute of a data object in a subclass ===
+
+To rename a data object attribute in a subclass, override the attribute accessor method and annotate it with `@AttributeName` using the new attribute name as value.
+Additionally the overridden method must call the `doValue()` method providing the new attribute name as argument.
+
+[source,java]
+.Example: Rename attribute in a data object subclass
+----
+include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/dataobject/ExampleEntityExDo.java[tags=class]
+----
+<1> Rename `name` attribute of superclass to `nameEx`
 
 === Interfaces to Data Objects ===
 
@@ -208,15 +243,21 @@ The interfaces may be used as types for attributes within a data object. At runt
 
 === Equals and Hashcode
 
-The base class `DoEntity` does not provide a default implementation of `equals()` and `hashCode()`, since a data object may contain any types of data which must not provide a useful `equals()` implementation.
-If a data object should be used as map key, a custom `equals()` and `hashCode()` method taking into account the relevant attributes should be added.
-For unit tests there is a utility providing different generic compare methods for data objects, see section <<sec-unit-testing>>.
+The Data Object base class `DoEntity` defines a generic `equals()` and `hashCode()` implementation considering all attributes of a data object for equality.
+A data object is equals to another data object, if the Java class of both data objects is identical and the attribute maps (including their nested values) of both data objects are equals.
+
+For futher details see:
+
+* `org.eclipse.scout.rt.platform.dataobject.DoEntity.equals(Object)`
+* `org.eclipse.scout.rt.platform.dataobject.DoNode.equals(Object)`
+
 
 === Generic DoEntity ===
 An instance of the `DoEntity` class can represent any kind of JSON document.
 If the JSON document contains no type attributes or no matching data object class exists at runtime, the JSON document is deserialized into a raw `DoEntity` instance holding all attributes.
 To access the attributes of the data object a set of generic getter methods may be used by specifying the attribute name.
 A generic JSON document is deserialized into a generic tree-like structure of nested `DoEntity` instances.
+If the serialized JSON document contains a `_type` and/or `_typeVersion` attribute, the attribute and its value is added as attribute to the generic raw `DoEntity` instance.
 
 [source,java]
 .Example: ExampleEntityDo accessing attribute "by name"
@@ -306,11 +347,46 @@ For each data object all available attributes and their properties (name, type, 
 include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/dataobject/DataObjectExamples.java[tags=accessInventory]
 ----
 
+Apart from attribute descriptions, the inventory provides access to type name and type version of each data object class.
+
 === Extending with custom serializer and deserializer ===
 The application scoped beans `DataObjectSerializers` resp. `DataObjectDeserializers` define the available serializer and deserializer classes used to marshal the data objects.
 Own custom serializer and deserializer implementations can be added by replacing  the corresponding base class and register its own custom serializer or deserializer.
 
+=== Enumerations within Data Objects
+Implementations of `org.eclipse.scout.rt.dataobject.enumeration.IEnum` add a `stringValue()` method to each enumeration value, guaranteeing a constant, fixed string value for each enumeration value.
+An arbitrary Java enum may be used within a data object, but does not guarantee a stable serialized value, if an enumeration value is changed in future.
+
+Additionally implementations of `IEnum` can be annotated with `@EnumName` and `@EnumVersion` to support handling of different versions and migration between.
+
+All instances of `IEnum` may be used within data objects and are automatically serialized to their JSON string value representation and deserialized back to the correct Java class instance.
+
+The default resolver mechanism for `IEnum` (see `org.eclipse.scout.rt.dataobject.enumeration.EnumResolver`) matches the given string with the available string values in the current enumeration implementation to look up the matching enumeration value.
+An optional static `resolve()` method handles the resolve of a given string value into the correct enumeration value allowing to support even string values, whose enumeration values where changed or deleted.
+
+[source,java]
+.Example IEnum implementation
+----
+include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/dataobject/DataObjectExamples.java[tags=exampleEnum]
+----
+<1> Optional resolve method
+
+=== Typed IDs within Data Objects
+
+Implementations of `org.eclipse.scout.rt.dataobject.id.IId<WRAPPED_TYPE>` interface wrap an arbitrary value adding a concrete Java type to a scalar value.
+E.g. the key of an example entity which technically is a UUID becomes an instance of the `ExampleId` class.
+
+All instances of `IId` may be used within data objects and are automatically serialized to their JSON string representation of the wrapped value and deserialized back to the correct Java class instance.
+
+An exampleId instance may then be used as type-safe parameter for further referencing a given example entity record, for instance as attribute value within a data object.
+
+[source,java]
+.Example ID implementation wrapping a UUID
+----
+include::{codedir}/org.eclipse.scout.docs.snippets/src/main/java/org/eclipse/scout/docs/snippets/dataobject/DataObjectExamples.java[tags=exampleId]
+----
+
 [[sec-unit-testing]]
 === Unit Testing ===
 A set of utility methods for unit tests with data objects are provided within the `DataObjectTestHelper` class.
-Commonly used are a set of assert methods (e.g. `assertDoEntityEquals()`) for testing data objects for (deep) equality.
+Commonly used are a set of assert methods (e.g. `assertEquals(Object expected, Object actual)`) for testing data objects for (deep) equality.
